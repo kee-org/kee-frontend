@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "declaration": true,
+    "lib": [
+        "dom", "es2015"
+    ],
+    "outDir": "dist",
+    "moduleResolution": "node"
+  },
+  "exclude": [
+    "node_modules",
+    "tests",
+    "dist"
+  ]
+}

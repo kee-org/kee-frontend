@@ -1,0 +1,50 @@
+format_version: 3
+pipelines:
+  keeFrontend:
+    group: defaultGroup
+    materials:
+      mygit:
+        type: configrepo
+    stages:
+      - installDeps:
+          #clean_workspace: true
+          jobs:
+            defaultJob:
+              tasks:
+                - exec:
+                    command: npm
+                    arguments:
+                      - "ci"
+      - build:
+          jobs:
+            defaultJob:
+              tasks:
+                - exec:
+                    command: npm
+                    arguments:
+                      - "start"
+      - test:
+          jobs:
+            defaultJob:
+              tasks:
+                - exec:
+                    command: npm
+                    arguments:
+                      - "test"
+      - sanity:
+          jobs:
+            defaultJob:
+              tasks:
+                - exec:
+                    command: npm
+                    arguments:
+                      - "whoami"
+      - publish:
+          jobs:
+            defaultJob:
+              tasks:
+                - exec:
+                    command: npm
+                    arguments:
+                      - "publish"
+                      - "dist"
