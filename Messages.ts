@@ -46,8 +46,10 @@ export class MessagesManager {
             return KeeError.InvalidState;
         }
 
+        const token = ( user && user.tokens ) ? user.tokens.identity : undefined;
+
         try {
-            const response = await remoteService.postRequest("v1/", {user: supportUser, message}, user.tokens.identity, () => user.refresh());
+            const response = await remoteService.postRequest("v1/", {user: supportUser, message}, token, () => user.refresh());
 
             if (isResponse(response)) {
                 if (response.status !== 200) {
@@ -75,8 +77,10 @@ export class MessagesManager {
             return KeeError.InvalidState;
         }
 
+        const token = ( user && user.tokens ) ? user.tokens.identity : undefined;
+
         try {
-            const response = await remoteService.putRequest("v1/", {user: supportUser, message}, user.tokens.identity, () => user.refresh());
+            const response = await remoteService.putRequest("v1/", {user: supportUser, message}, token, () => user.refresh());
 
             if (isResponse(response)) {
                 if (response.status !== 200) {

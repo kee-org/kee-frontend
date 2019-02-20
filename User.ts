@@ -236,6 +236,9 @@ export class User {
         if (!remoteService) {
             return KeeError.InvalidState;
         }
+        if (!this.tokens || !this.tokens.identity) {
+            return KeeError.InvalidState;
+        }
 
         try {
             const response = await remoteService.postRequest("refresh", {}, this.tokens.identity);
@@ -280,6 +283,9 @@ export class User {
 
     async resendVerificationEmail () {
         if (!remoteService) {
+            return KeeError.InvalidState;
+        }
+        if (!this.tokens || !this.tokens.identity) {
             return KeeError.InvalidState;
         }
 
@@ -351,7 +357,7 @@ export class User {
         try {
             const response1 = await remoteService.postRequest("changePasswordStart", {
                 verifier
-            }, this.tokens.identity, () => this.refresh());
+            }, this.tokens ? this.tokens.identity : undefined, () => this.refresh());
 
             if (!isResponse(response1)) {
                 if (response1 === KeeError.LoginRequired) {
@@ -368,7 +374,7 @@ export class User {
             }
 
             const response2 = await remoteService.postRequest("changePasswordFinish", {},
-                this.tokens.identity, () => this.refresh());
+                this.tokens ? this.tokens.identity : undefined, () => this.refresh());
 
             if (isResponse(response2)) {
                 this.passKey = newPassKey;
