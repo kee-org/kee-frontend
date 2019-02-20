@@ -49,9 +49,13 @@ export class StorageManager {
         if (!remoteService) {
             return KeeError.InvalidState;
         }
+        if (!user) {
+            return KeeError.InvalidRequest;
+        }
+        const storageToken = user.tokens ? user.tokens.storage : undefined;
 
         try {
-            const response = await remoteService.getRequest("meta/", user.tokens.storage, () => user.refresh());
+            const response = await remoteService.getRequest("meta/", storageToken, () => user.refresh());
 
             if (isResponse(response)) {
                 if (response.status !== 200) {
@@ -83,11 +87,15 @@ export class StorageManager {
         if (!remoteService) {
             return KeeError.InvalidState;
         }
+        if (!user) {
+            return KeeError.InvalidRequest;
+        }
+        const storageToken = user.tokens ? user.tokens.storage : undefined;
 
         try {
             const si = StorageItem.fromEmailHash(user.emailHashed);
             si.name = name;
-            const response = await remoteService.postRequest("meta/", {si, emptyVault}, user.tokens.storage, () => user.refresh());
+            const response = await remoteService.postRequest("meta/", {si, emptyVault}, storageToken, () => user.refresh());
 
             if (isResponse(response)) {
                 if (response.status !== 200) {
@@ -121,9 +129,13 @@ export class StorageManager {
         if (!remoteService) {
             return KeeError.InvalidState;
         }
+        if (!user) {
+            return KeeError.InvalidRequest;
+        }
+        const storageToken = user.tokens ? user.tokens.storage : undefined;
 
         try {
-            const response = await remoteService.postRequest("meta/" + si.id, si, user.tokens.storage, () => user.refresh());
+            const response = await remoteService.postRequest("meta/" + si.id, si, storageToken, () => user.refresh());
 
             if (isResponse(response)) {
                 if (response.status !== 200) {
@@ -156,9 +168,13 @@ export class StorageManager {
         if (!remoteService) {
             return KeeError.InvalidState;
         }
+        if (!user) {
+            return KeeError.InvalidRequest;
+        }
+        const storageToken = user.tokens ? user.tokens.storage : undefined;
 
         try {
-            const response = await remoteService.getRequest("itemLinks/" + id, user.tokens.storage, () => user.refresh());
+            const response = await remoteService.getRequest("itemLinks/" + id, storageToken, () => user.refresh());
 
             if (isResponse(response)) {
                 if (response.status !== 200) {
