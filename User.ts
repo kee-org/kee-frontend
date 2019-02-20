@@ -6,6 +6,7 @@ import { JWT } from "./JWT";
 import { RemoteService, isResponse } from "./RemoteService";
 import { KeeError } from "./KeeError";
 import { Claim } from "./Claim";
+import { Response } from "superagent";
 
 let remoteService: RemoteService;
 let tokenChangeHandler: (tokens: Tokens) => void;
@@ -157,6 +158,10 @@ export class User {
             this.passKey = await this.derivePassKey(this.email, hashedMasterKey);
         }
 
+        if (!this.loginParameters) {
+            return KeeError.MaybeOffline;
+        }
+
         if (!this.emailHashed) {
             console.error("Hashed email missing. Can't complete login procedure.");
             return KeeError.InvalidState;
@@ -167,10 +172,6 @@ export class User {
         }
         if (!this.passKey) {
             console.error("passKey missing. Can't complete login procedure.");
-            return KeeError.InvalidState;
-        }
-        if (!this.loginParameters) {
-            console.error("loginParameters missing. Can't complete login procedure.");
             return KeeError.InvalidState;
         }
         if (!this.loginParameters.clientEphemeral) {
@@ -236,21 +237,21 @@ export class User {
         if (!remoteService) {
             return KeeError.InvalidState;
         }
-        if (!this.tokens || !this.tokens.identity) {
-            return KeeError.InvalidState;
-        }
 
         try {
-            const response = await remoteService.postRequest("refresh", {}, this.tokens.identity);
+            let response: KeeError|Response = KeeError.LoginRequired;
+            if (this.tokens && this.tokens.identity) {
+                response = await remoteService.postRequest("refresh", {}, this.tokens.identity);
 
-            if (isResponse(response)) {
-                if (response.status !== 200) {
-                    console.error("Unexpected status code");
-                    return KeeError.Unexpected;
+                if (isResponse(response)) {
+                    if (response.status !== 200) {
+                        console.error("Unexpected status code");
+                        return KeeError.Unexpected;
+                    }
+
+                    await this.parseJWTs(response.body.JWTs);
+                    return this.tokens;
                 }
-
-                await this.parseJWTs(response.body.JWTs);
-                return this.tokens;
             }
 
             if (response === KeeError.LoginRequired) {

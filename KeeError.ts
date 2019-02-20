@@ -12,5 +12,6 @@ export const enum KeeError {
     AlreadyRegistered = "alreadyRegistered",
     MissingPrimaryDB = "missingPrimaryDB",
     ExceededQuota = "exceededQuota",
-    InvalidRequest = "invalidRequest"
+    InvalidRequest = "invalidRequest",
+    MaybeOffline = "maybeOffline"
 }
