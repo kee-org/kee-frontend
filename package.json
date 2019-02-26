@@ -1,6 +1,6 @@
 {
   "name": "kee-frontend",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "Modules to communicate with the Kee Vault servers",
   "main": "main.js",
   "types": "main.d.ts",

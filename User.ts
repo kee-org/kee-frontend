@@ -421,6 +421,7 @@ export class User {
                 case "storage": this._tokens.storage = jwt; break;
                 case "forms": this._tokens.forms = jwt; break;
                 case "identity": this._tokens.identity = jwt; break;
+                case "sso": this._tokens.sso = jwt; break;
                 }
             } catch (e) {
                 console.log("Token error: " + e);
