@@ -1,6 +1,6 @@
 {
   "name": "kee-frontend",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "Modules to communicate with the Kee Vault servers",
   "main": "main.js",
   "types": "main.d.ts",
@@ -13,17 +13,17 @@
     "lint": "tslint '*.ts'"
   },
   "devDependencies": {
-    "@types/jest": "^22.2.3",
-    "@types/jws": "^3.1.0",
-    "@types/superagent": "^3.8.0",
-    "jest": "^22.4.3",
-    "ts-jest": "^22.4.6",
-    "tslint": "^5.5.0",
-    "tslint-config-standard": "^6.0.1",
-    "typescript": "^2.8.0"
+    "@types/jest": "^24.0.9",
+    "@types/jws": "^3.2.0",
+    "@types/superagent": "^3.8.6",
+    "jest": "^24.1.0",
+    "ts-jest": "^24.0.0",
+    "tslint": "^5.13.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "secure-remote-password": "^0.3.0",
-    "superagent": "^3.8.3"
+    "secure-remote-password": "^0.3.1",
+    "superagent": "^4.1.0"
   }
 }
