@@ -3,6 +3,17 @@ import { Claim } from "./Claim";
 
 export class JWT {
 
+    public static parse (sig: string) {
+        const sigParts = sig.split(".");
+
+        if (sigParts.length !== 3) {
+            throw new Error("Invalid JWT");
+        }
+
+        const claimJSON = base64urlDecode(sigParts[1]);
+        return JSON.parse(claimJSON);
+    }
+
     public static async verify (sig: string, expectedStage: "dev"|"beta"|"prod"): Promise<{audience: string, claim?: Claim}> {
 
         const sigParts = sig.split(".");
@@ -70,10 +81,10 @@ export class JWT {
             ["verify"] //"verify" for public key import, "sign" for private key imports
         );
 
-        const isValid = await window.crypto.subtle.verify (
+        const isValid = await window.crypto.subtle.verify(
             {
                 name: "ECDSA",
-                hash: {name: "SHA-256"} //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+                hash: { name: "SHA-256" } //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
             },
             key, //from generateKey or importKey above
             base64urltoByteArray(sigParts[2]), //ArrayBuffer of the signature

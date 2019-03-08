@@ -39,7 +39,7 @@ class RequestConfig {
         if (this.token) {
             req = req.query("t=" + this.token);
         }
-        req = req.type("text/plain").timeout({response: 30000, deadline: 90000});
+        req = req.type("text/plain").timeout({ response: 30000, deadline: 90000 });
 
         if (this.obj) {
             return req.send(JSON.stringify(this.obj));
@@ -53,17 +53,20 @@ const endpoints: any = {
     dev: {
         storage: "https://s-dev.kee.pm/",
         identity: "https://id-dev.kee.pm/",
-        messages: "https://msg-dev.kee.pm/"
+        messages: "https://msg-dev.kee.pm/",
+        reset: "https://resetacc-dev.kee.pm/"
     },
     beta: {
         storage: "https://s-beta.kee.pm/",
         identity: "https://id-beta.kee.pm/",
-        messages: "https://msg-beta.kee.pm/"
+        messages: "https://msg-beta.kee.pm/",
+        reset: "https://resetacc-beta.kee.pm/"
     },
     prod: {
         storage: "https://s.kee.pm/",
         identity: "https://id.kee.pm/",
-        messages: "https://msg.kee.pm/"
+        messages: "https://msg.kee.pm/",
+        reset: "https://resetacc.kee.pm/"
     }
 };
 

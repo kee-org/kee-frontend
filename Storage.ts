@@ -24,12 +24,12 @@ export class StorageItem {
     }
 
     static fromEmailHash (emailHashed: string) {
-        const si = new StorageItem({ emailHashed, schemaVersion: 1, type: StorageType.KEE_S3});
+        const si = new StorageItem({ emailHashed, schemaVersion: 1, type: StorageType.KEE_S3 });
         return si;
     }
 
     static fromEmailHashAndId (emailHashed: string, id: string) {
-        const si = new StorageItem({ emailHashed, schemaVersion: 1, type: StorageType.KEE_S3, id});
+        const si = new StorageItem({ emailHashed, schemaVersion: 1, type: StorageType.KEE_S3, id });
         return si;
     }
 }
@@ -95,7 +95,7 @@ export class StorageManager {
         try {
             const si = StorageItem.fromEmailHash(user.emailHashed);
             si.name = name;
-            const response = await remoteService.postRequest("meta/", {si, emptyVault}, storageToken, () => user.refresh());
+            const response = await remoteService.postRequest("meta/", { si, emptyVault }, storageToken, () => user.refresh());
 
             if (isResponse(response)) {
                 if (response.status !== 200) {

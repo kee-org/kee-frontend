@@ -1,7 +1,7 @@
 import { Tokens } from "./Tokens";
 
 import * as srp from "secure-remote-password/client";
-import { bufferToBase64, hex2base64, base642hex, base64toByteArray, hexStringToByteArray } from "./Utils";
+import { bufferToBase64, hex2base64, base642hex, base64toByteArray, hexStringToByteArray, bufferToHex } from "./Utils";
 import { JWT } from "./JWT";
 import { RemoteService, isResponse } from "./RemoteService";
 import { KeeError } from "./KeeError";
@@ -53,6 +53,61 @@ export class User {
         user.email = email;
         user._emailHashed = await hashString(email, EMAIL_ID_SALT);
         return user;
+    }
+
+    static async fromResetProcess (email: string, unverifiedJWTString: string, hashedMasterKey: ArrayBuffer,
+        sendResetConfirmation: (obj: object) => Promise<KeeError|Response>) {
+        if (!remoteService) {
+            return false;
+        }
+
+        if (!unverifiedJWTString) {
+            return false;
+        }
+
+        if (!email) {
+            console.error("Email missing. Can't complete reset procedure.");
+            return false;
+        }
+
+        const unverifiedJWT = JWT.parse(unverifiedJWTString);
+        if (!unverifiedJWT || !unverifiedJWT.sub) {
+            return false;
+        }
+
+        const user = new User();
+        user.email = email;
+        user.passKey = await user.derivePassKey(email, hashedMasterKey);
+        user._emailHashed = await hashString(email, EMAIL_ID_SALT);
+
+        // Mostly just a sanity check to ensure truncated links can't result in an invalid verifier being associated with the user's account
+        if (unverifiedJWT.sub !== user._emailHashed) {
+            console.error("Email mismatch. Can't complete reset procedure.");
+            return false;
+        }
+
+        const hexSalt = srp.generateSalt();
+        const salt = hex2base64(hexSalt);
+        user.salt = salt;
+
+        const privateKey = srp.derivePrivateKey(hexSalt, unverifiedJWT.sub, user.passKey);
+        const verifier = hex2base64(srp.deriveVerifier(privateKey));
+
+        try {
+            const response = await sendResetConfirmation({
+                verifier,
+                salt
+            });
+
+            if (!isResponse(response)) {
+                return false;
+            }
+            await user.parseJWTs(response.body.JWTs);
+            return user;
+        } catch (e) {
+            console.error(e);
+            return false;
+        }
     }
 
     public currentFeatures () {
@@ -395,6 +450,55 @@ export class User {
         }
     }
 
+    async resetStart () {
+        if (!remoteService) {
+            return false;
+        }
+
+        if (!this.email) {
+            console.error("Email missing. Can't reset.");
+            return false;
+        }
+        if (!this.emailHashed) {
+            console.error("Hashed email missing. Can't reset.");
+            return false;
+        }
+
+        try {
+            const response1 = await remoteService.postUnauthenticatedRequest("resetPasswordRequest", {
+                emailHashed: this.emailHashed
+            });
+
+            if (!isResponse(response1)) {
+                // We can't handle any errors
+                return false;
+            }
+
+            const unverifiedJWTString = response1.body.jwt;
+            if (!unverifiedJWTString) {
+                return false;
+            }
+
+            const unverifiedJWT = JWT.parse(unverifiedJWTString);
+            if (!unverifiedJWT || !unverifiedJWT.costTarget || !unverifiedJWT.costFactor) {
+                return false;
+            }
+            const nonce = await calculateCostNonce(unverifiedJWT.costFactor, unverifiedJWT.costTarget);
+
+            const response2 = await remoteService.postUnauthenticatedRequest("resetPasswordStart", {
+                authToken: unverifiedJWTString,
+                costNonce: nonce
+            });
+
+            if (isResponse(response2)) {
+                return response2.ok;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return false;
+    }
+
     private async parseJWTs (JWTs: string[]) {
 
         this._tokens = {};
@@ -403,7 +507,7 @@ export class User {
         // the other claims for later forwarding back to the server
         for (const jwt of JWTs) {
             try {
-                const {audience, claim} = await JWT.verify(jwt, remoteService.stage);
+                const { audience, claim } = await JWT.verify(jwt, remoteService.stage);
                 switch (audience) {
                 case "client": {
                     if (claim !== undefined) {
@@ -451,6 +555,13 @@ export async function hashString (text: string, salt?: string) {
     return bufferToBase64(hash);
 }
 
+export async function hashStringToHex (text: string, salt?: string) {
+    const message = (salt ? salt : "") + text;
+    const msgBuffer = new TextEncoder().encode(message);
+    const hash = await crypto.subtle.digest("SHA-256", msgBuffer);
+    return bufferToHex(hash);
+}
+
 export async function hashByteArray (text: Uint8Array, salt: Uint8Array) {
     const msgBuffer = new Uint8Array(salt.byteLength+text.byteLength);
     msgBuffer.set(salt);
@@ -475,7 +586,7 @@ export async function stretchByteArray (byteArray: Uint8Array, salt: string) {
             name: "PBKDF2",
             salt: base64toByteArray(salt),
             iterations: 500,
-            hash: {name: "SHA-256"}
+            hash: { name: "SHA-256" }
         },
         key,
         {
@@ -520,10 +631,10 @@ class SRP2 {
 //TODO: Might want to do this differently - not sure how much overhead this many async awaits will add
 async function calculateCostNonce (costFactor: number, costTarget: string) {
     let nonce = 0;
-    let h = await hashString(costTarget + nonce);
+    let h = await hashStringToHex(costTarget + nonce);
     while (!checkNonce(h, costFactor)) {
         nonce++;
-        h = await hashString(costTarget + nonce);
+        h = await hashStringToHex(costTarget + nonce);
     }
     return nonce.toString();
 }
