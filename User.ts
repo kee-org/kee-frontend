@@ -125,7 +125,7 @@ export class User {
         return stretchByteArray(byteArray, STRETCH_SALT);
     }
 
-    public async register (introEmailStatus: number, marketingEmailStatus: number, code: string) {
+    public async register (introEmailStatus: number, marketingEmailStatus: number, isMobile: boolean, code: string) {
         if (!remoteService) {
             return KeeError.InvalidState;
         }
@@ -145,6 +145,7 @@ export class User {
                 email: this.email,
                 introEmailStatus,
                 marketingEmailStatus,
+                mob: isMobile ? 1 : 0,
                 code
             });
 
