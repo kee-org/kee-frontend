@@ -1,7 +1,7 @@
 import { Tokens } from "./Tokens";
 
 import * as srp from "secure-remote-password/client";
-import { bufferToBase64, hex2base64, base642hex, base64toByteArray, hexStringToByteArray, bufferToHex } from "./Utils";
+import { bufferToBase64, hex2base64, base642hex, base64toByteArray, hexStringToByteArray, bufferToHex, utf8encode } from "./Utils";
 import { JWT } from "./JWT";
 import { RemoteService, isResponse } from "./RemoteService";
 import { KeeError } from "./KeeError";
@@ -551,14 +551,14 @@ export class UserManager {
 
 export async function hashString (text: string, salt?: string) {
     const message = (salt ? salt : "") + text;
-    const msgBuffer = new TextEncoder().encode(message);
+    const msgBuffer = utf8encode(message);
     const hash = await crypto.subtle.digest("SHA-256", msgBuffer);
     return bufferToBase64(hash);
 }
 
 export async function hashStringToHex (text: string, salt?: string) {
     const message = (salt ? salt : "") + text;
-    const msgBuffer = new TextEncoder().encode(message);
+    const msgBuffer = utf8encode(message);
     const hash = await crypto.subtle.digest("SHA-256", msgBuffer);
     return bufferToHex(hash);
 }

@@ -1,4 +1,4 @@
-import { base64urlDecode, base64urltoByteArray } from "./Utils";
+import { base64urlDecode, base64urltoByteArray, utf8encode } from "./Utils";
 import { Claim } from "./Claim";
 
 export class JWT {
@@ -34,7 +34,7 @@ export class JWT {
             throw new Error("Invalid claim");
         }
 
-        const data = new TextEncoder().encode(sigParts[0] + "." + sigParts[1]).buffer;
+        const data = utf8encode(sigParts[0] + "." + sigParts[1]).buffer;
 
         // Untrusted source might tell us which key to use but they can't actually pick the
         // key material so we only have to defend against cross-stage server-side breaches

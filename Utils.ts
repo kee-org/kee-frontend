@@ -1,3 +1,7 @@
+import * as TextEncoding from "text-encoding";
+
+const TextEncoder = (global as any).TextEncoder || TextEncoding.TextEncoder;
+
 export function base64urlEncode (input: string) {
     return btoa(input).replace(/\//g, "_").replace(/\+/g, "-").replace(/\=/g, ".");
 }
@@ -111,4 +115,8 @@ export function hex2base64 (text: string) {
 export function base642hex (text: string) {
     const array = base64toByteArray(text);
     return byteArrayToHex(array);
+}
+
+export function utf8encode (data: string) {
+    return new TextEncoder().encode(data);
 }
