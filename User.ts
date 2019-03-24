@@ -7,6 +7,7 @@ import { RemoteService, isResponse } from "./RemoteService";
 import { KeeError } from "./KeeError";
 import { Claim } from "./Claim";
 import { Response } from "superagent";
+import { Pbkdf2HmacSha256 } from "./asmcrypto/entry-export_all";
 
 let remoteService: RemoteService;
 let tokenChangeHandler: (tokens: Tokens) => void;
@@ -572,33 +573,40 @@ export async function hashByteArray (text: Uint8Array, salt: Uint8Array) {
 }
 
 export async function stretchByteArray (byteArray: Uint8Array, salt: string) {
-    const key = await crypto.subtle.importKey(
-        "raw",
-        byteArray,
-        {
-            name: "PBKDF2"
-        } as any, //TODO: Typescript lib.d.ts bug?
-        false,
-        ["deriveKey"]
-    );
+    const saltArray = base64toByteArray(salt);
+    try {
+        const key = await crypto.subtle.importKey(
+            "raw",
+            byteArray,
+            {
+                name: "PBKDF2"
+            } as any, //TODO: Typescript lib.d.ts bug?
+            false,
+            ["deriveKey"]
+        );
 
-    const derivedKey = await crypto.subtle.deriveKey(
-        {
-            name: "PBKDF2",
-            salt: base64toByteArray(salt),
-            iterations: 500,
-            hash: { name: "SHA-256" }
-        },
-        key,
-        {
-            name: "AES-CTR",
-            length: 256
-        },
-        true,
-        ["encrypt", "decrypt"]
-    );
-    const hashBuffer = await crypto.subtle.exportKey("raw", derivedKey);
-    return bufferToBase64(hashBuffer);
+        const derivedKey = await crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: saltArray,
+                iterations: 500,
+                hash: { name: "SHA-256" }
+            },
+            key,
+            {
+                name: "AES-CTR",
+                length: 256
+            },
+            true,
+            ["encrypt", "decrypt"]
+        );
+        const hashBuffer = await crypto.subtle.exportKey("raw", derivedKey);
+        return bufferToBase64(hashBuffer);
+    } catch (e) {
+        // Exception expected in Edge until it switches to Chromium
+        // backend, maybe in other rare browsers too.
+        return bufferToBase64(Pbkdf2HmacSha256(byteArray, saltArray, 500, 32));
+    }
 }
 
 export const EMAIL_ID_SALT = "a7d60f672fc7836e94dabbd7000f7ef4e5e72bfbc66ba4372add41d7d46a1c24";

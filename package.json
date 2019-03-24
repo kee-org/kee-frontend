@@ -1,6 +1,6 @@
 {
   "name": "kee-frontend",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "Modules to communicate with the Kee Vault servers",
   "main": "main.js",
   "types": "main.d.ts",
@@ -8,7 +8,7 @@
   "author": "Kee Vault Ltd",
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
-    "start": "tsc && cp package.json dist/",
+    "start": "tsc && cp package.json dist/ && cp -r asmcrypto dist/",
     "test": "jest",
     "lint": "tslint '*.ts'"
   },
