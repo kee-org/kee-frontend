@@ -1,5 +1,7 @@
 import { base64urlDecode, base64urltoByteArray, utf8encode } from "./Utils";
 import { Claim } from "./Claim";
+import * as elliptic from "elliptic";
+import { Sha256 } from "./asmcrypto/entry-export_all";
 
 export class JWT {
 
@@ -70,26 +72,43 @@ export class JWT {
         default: throw new Error("Unknown JWT issuer so cannot verify");
         }
 
-        const key = await window.crypto.subtle.importKey(
-            "jwk",
-            jwk,
-            {   //these are the algorithm options
-                name: "ECDSA",
-                namedCurve: "P-256" //can be "P-256", "P-384", or "P-521"
-            },
-            false, //whether the key is extractable (i.e. can be used in exportKey)
-            ["verify"] //"verify" for public key import, "sign" for private key imports
-        );
+        let isValid = false;
+        try {
+            const key = await window.crypto.subtle.importKey(
+                "jwk",
+                jwk,
+                {   //these are the algorithm options
+                    name: "ECDSA",
+                    namedCurve: "P-256" //can be "P-256", "P-384", or "P-521"
+                },
+                false, //whether the key is extractable (i.e. can be used in exportKey)
+                ["verify"] //"verify" for public key import, "sign" for private key imports
+            );
 
-        const isValid = await window.crypto.subtle.verify(
-            {
-                name: "ECDSA",
-                hash: { name: "SHA-256" } //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-            },
-            key, //from generateKey or importKey above
-            base64urltoByteArray(sigParts[2]), //ArrayBuffer of the signature
-            data //ArrayBuffer of the data
-        );
+            isValid = await window.crypto.subtle.verify(
+                {
+                    name: "ECDSA",
+                    hash: { name: "SHA-256" } //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+                },
+                key, //from generateKey or importKey above
+                base64urltoByteArray(sigParts[2]), //ArrayBuffer of the signature
+                data //ArrayBuffer of the data
+            );
+        } catch (e) {
+            // try again using fallback (slower) - only known
+            // beneficiary of this in 2019 is Edge
+            try {
+                const ec = new elliptic.ec("p256");
+                const pubData = { x: base64urltoByteArray(jwk.x), y: base64urltoByteArray(jwk.y) };
+                const pubKey = ec.keyFromPublic(pubData as any);
+                const digest = new Sha256().process(new Uint8Array(data)).finish().result;
+                const sigBuffer = base64urltoByteArray(sigParts[2]);
+                const sigObj = { r: sigBuffer.slice(0, 32), s: sigBuffer.slice(32) };
+                isValid = ec.verify(digest! as any, sigObj as any, pubKey as any);
+            } catch (ex) {
+                throw new Error("Error using fallback p256 curve for token verification. Original webcrypto error: " + e + ". This error: " + ex);
+            }
+        }
 
         if (!isValid) {
             throw new Error("JWT signature did not verify");
