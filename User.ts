@@ -290,6 +290,41 @@ export class User {
         }
     }
 
+    async applyCouponToSubscription (code: string) {
+        if (!remoteService) {
+            return KeeError.InvalidState;
+        }
+        if (!this.email) {
+            console.error("Email missing. Can't apply coupon.");
+            return KeeError.InvalidState;
+        }
+        if (!this.emailHashed) {
+            console.error("Hashed email missing. Can't apply coupon.");
+            return KeeError.InvalidState;
+        }
+        if (!code) {
+            console.error("Code missing. Can't apply coupon.");
+            return KeeError.InvalidState;
+        }
+
+        try {
+            const response = await remoteService.getRequest(`applyCoupon/${code}`,
+                this.tokens ? this.tokens.identity : undefined, () => this.refresh());
+
+            if (!isResponse(response)) {
+                if (response === KeeError.LoginRequired) {
+                    return KeeError.LoginFailed;
+                }
+                // We can't handle any other errors
+                return response;
+            }
+            return response.ok;
+        } catch (e) {
+            console.error(e);
+            return KeeError.Unexpected;
+        }
+    }
+
     async refresh () {
         if (!remoteService) {
             return KeeError.InvalidState;
