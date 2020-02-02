@@ -4,7 +4,7 @@ beforeAll(() => {
     Date.now = jest.fn(() => new Date(Date.UTC(2017, 0, 1)).valueOf());
 });
 
-describe("utils", async () => {
+describe("utils", () => {
 
     test("hex roundtrips through base64", async () => {
         // b64 = "9E0mTE3/KZvKCvuMSDOvsFe+BNSH9oz812y3BsZn4/E=";
