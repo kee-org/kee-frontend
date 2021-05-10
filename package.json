@@ -1,6 +1,6 @@
 {
   "name": "kee-frontend",
-  "version": "1.0.34",
+  "version": "1.0.36",
   "description": "Modules to communicate with the Kee Vault servers",
   "main": "main.js",
   "types": "main.d.ts",
@@ -25,7 +25,7 @@
     "typescript": "^3.7.5"
   },
   "dependencies": {
-    "elliptic": "^6.5.2",
+    "elliptic": "^6.5.3",
     "secure-remote-password": "^0.3.1",
     "superagent": "^5.2.1",
     "text-encoding": "github:keeweb/text-encoding#4dfb7cb0954c222852092f8b06ae4f6b4f60bfbb"
