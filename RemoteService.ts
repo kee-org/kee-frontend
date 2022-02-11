@@ -147,7 +147,7 @@ export class RemoteService {
             const req = config.prepRequest();
             const response = await req;
             return response;
-        } catch (e) {
+        } catch (e: any) {
             if (e.timeout) {
                 if (e.message.indexOf("Response timeout of ") === 0) {
                     return KeeError.ServerUnreachable;

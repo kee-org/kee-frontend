@@ -419,6 +419,33 @@ export class User {
         }
     }
 
+    async restartTrial () {
+        if (!remoteService) {
+            return KeeError.InvalidState;
+        }
+
+        if (!this.emailHashed) {
+            console.error("Hashed email missing. Can't complete trial restart procedure.");
+            return KeeError.InvalidState;
+        }
+
+        try {
+            const response1 = await remoteService.getRequest("restartTrial", this.tokens ? this.tokens.identity : undefined, () => this.refresh());
+
+            if (!isResponse(response1)) {
+                if (response1 === KeeError.LoginRequired) {
+                    return KeeError.LoginFailed;
+                }
+                // We can't handle any other errors
+                return response1;
+            }
+            return true;
+        } catch (e) {
+            console.error(e);
+            return KeeError.Unexpected;
+        }
+    }
+
     async changePassword (hashedMasterKey: ArrayBuffer, onChangeStarted: () => Promise<boolean>) {
         if (!remoteService) {
             return KeeError.InvalidState;
@@ -615,7 +642,7 @@ export async function stretchByteArray (byteArray: Uint8Array, salt: string) {
             byteArray,
             {
                 name: "PBKDF2"
-            } as any, //TODO: Typescript lib.d.ts bug?
+            },
             false,
             ["deriveKey"]
         );
