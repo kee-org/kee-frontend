@@ -430,7 +430,7 @@ export class User {
         }
 
         try {
-            const response1 = await remoteService.getRequest("restartTrial", this.tokens ? this.tokens.identity : undefined, () => this.refresh());
+            const response1 = await remoteService.getRequest("restartTrial/", this.tokens ? this.tokens.identity : undefined, () => this.refresh());
 
             if (!isResponse(response1)) {
                 if (response1 === KeeError.LoginRequired) {
