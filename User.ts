@@ -27,6 +27,10 @@ export class User {
     public get emailHashed (): string {
         return this._emailHashed;
     }
+    private _userId: string;
+    public get userId (): string {
+        return this._userId;
+    }
     private salt: string;
     private passKey: string;
     private features: Features;
@@ -81,7 +85,8 @@ export class User {
         user.passKey = await user.derivePassKey(email, hashedMasterKey);
         user._emailHashed = await hashString(email, EMAIL_ID_SALT);
 
-        // Mostly just a sanity check to ensure truncated links can't result in an invalid verifier being associated with the user's account
+        // Mostly just a sanity check to ensure truncated links can't result in an invalid
+        // verifier being associated with the user's account
         if (unverifiedJWT.sub !== user._emailHashed) {
             console.error("Email mismatch. Can't complete reset procedure.");
             return false;
@@ -113,6 +118,10 @@ export class User {
 
     public currentFeatures () {
         return this.features ? this.features.enabled : [];
+    }
+
+    public setUserId (userId: string) {
+        this._userId = userId;
     }
 
     public async derivePassKey (email: string, hashedMasterKey: ArrayBuffer) {
@@ -582,6 +591,7 @@ export class User {
                                 source: "unknown",
                                 validUntil: claim.featureExpiry
                             };
+                            this._userId = claim.sub;
                             this._tokens.client = jwt;
                         }
                     }

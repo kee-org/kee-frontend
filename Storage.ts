@@ -11,7 +11,7 @@ export enum StorageType {
 export type URLlist = {ul: string, dl: string, st: string};
 
 export class StorageItem {
-    public emailHashed: string;
+    public emailHashed: string; // actually userId now but backend still calls it emailHashed
     public schemaVersion: number;
     public id: string;
     public location: string;
@@ -23,13 +23,13 @@ export class StorageItem {
         Object.assign(this, init);
     }
 
-    static fromEmailHash (emailHashed: string) {
-        const si = new StorageItem({ emailHashed, schemaVersion: 1, type: StorageType.KEE_S3 });
+    static fromUserId (userId: string) {
+        const si = new StorageItem({ emailHashed: userId, schemaVersion: 1, type: StorageType.KEE_S3 });
         return si;
     }
 
-    static fromEmailHashAndId (emailHashed: string, id: string) {
-        const si = new StorageItem({ emailHashed, schemaVersion: 1, type: StorageType.KEE_S3, id });
+    static fromUserIdAndId (userId: string, id: string) {
+        const si = new StorageItem({ emailHashed: userId, schemaVersion: 1, type: StorageType.KEE_S3, id });
         return si;
     }
 }
@@ -93,7 +93,7 @@ export class StorageManager {
         const storageToken = user.tokens ? user.tokens.storage : undefined;
 
         try {
-            const si = StorageItem.fromEmailHash(user.emailHashed);
+            const si = StorageItem.fromUserId(user.userId);
             si.name = name;
             const response = await remoteService.postRequest("meta/", { si, emptyVault }, storageToken, () => user.refresh());
 
