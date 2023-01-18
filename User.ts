@@ -18,6 +18,7 @@ export class Features {
     enabled: Feature[];
     validUntil: number;
     source: string;
+    subscriptionId?: string;
 }
 
 
@@ -589,7 +590,8 @@ export class User {
                             this.features = {
                                 enabled: claim.features,
                                 source: "unknown",
-                                validUntil: claim.featureExpiry
+                                validUntil: claim.featureExpiry,
+                                subscriptionId: claim.subscriptionId
                             };
                             this._userId = claim.sub;
                             this._tokens.client = jwt;
