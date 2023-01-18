@@ -6,4 +6,5 @@ export class Claim {
     iat: number;
     features: string[];
     featureExpiry: number;
+    subscriptionId?: string;
 }
