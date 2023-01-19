@@ -16,7 +16,8 @@ jobs:
       - run: npm ci
       - run: npm start
       - run: npm test
-      - run: cd dist
-      - run: npm publish
+      - run: |
+          cd dist
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
